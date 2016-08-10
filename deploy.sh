@@ -1,4 +1,5 @@
 git checkout master
+git pull origin documentation
 mkdocs build
 cp -R site/* .
 rm -rf site
