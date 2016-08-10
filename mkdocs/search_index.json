@@ -1,0 +1,109 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Ray Framework\n\n\nRay is a framework that helps you to deliver well-designed software without been stuck in your framework. Ray it's a ready to production framework that contains a uWSGI server ready to be used on production environment.\n\n\nAre you using Google App Engine? Great! Ray is compatible with it.\n\n\n\n\n\n\n\n\nFeatures\n\n\n\n\nEasy REST APIs\n\n\nDatabase Hooks\n\n\nBuilt-in Authentication\n\n\nShields to protect your API\n\n\nuWSGI built-in server\n\n\nIntegration with SQLAlchemy\n\n\nIntegration with Peewee\n\n\nIntegration with Google App Engine\n\n\n\n\nInstall it\n\n\npip install ray_framework\n\n\n\n\nAuthor\n\n\nFelipe Volpone", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#ray-framework", 
+            "text": "Ray is a framework that helps you to deliver well-designed software without been stuck in your framework. Ray it's a ready to production framework that contains a uWSGI server ready to be used on production environment.  Are you using Google App Engine? Great! Ray is compatible with it.", 
+            "title": "Ray Framework"
+        }, 
+        {
+            "location": "/#features", 
+            "text": "Easy REST APIs  Database Hooks  Built-in Authentication  Shields to protect your API  uWSGI built-in server  Integration with SQLAlchemy  Integration with Peewee  Integration with Google App Engine", 
+            "title": "Features"
+        }, 
+        {
+            "location": "/#install-it", 
+            "text": "pip install ray_framework", 
+            "title": "Install it"
+        }, 
+        {
+            "location": "/#author", 
+            "text": "Felipe Volpone", 
+            "title": "Author"
+        }, 
+        {
+            "location": "/documentation/", 
+            "text": "Features\n\n\nEasy APIs\n\n\nCreate a model and then decorated it with the endpoint decorator.\n\n\nfrom ray.endpoint import endpoint\nfrom ray_sqlalchemy import AlchemyModel\nfrom sqlalchemy import Column, Integer, String\n\nBase = declarative_base()\n\n@endpoint('/user')\nclass UserModel(AlchemyModel):\n    name = StringProperty()\n    age = IntegerProperty()\n\n\n\n\nNow, you have the http methods to interact with your model using the urls:\n\n\n\n\n\n\n\n\nHTTP Verb\n\n\nPath\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nGET\n\n\n/api/user\n\n\nList all users\n\n\n\n\n\n\nGET\n\n\n/api/user/{id}\n\n\nGet one user\n\n\n\n\n\n\nPOST\n\n\n/api/user\n\n\nCreate an user\n\n\n\n\n\n\nPUT\n\n\n/api/user/{id}\n\n\nUpdate an user\n\n\n\n\n\n\nDELETE\n\n\n/api/user/{id}\n\n\nDelete an user\n\n\n\n\n\n\n\n\nHooks\n\n\nHooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed \nbefore save the model, after the model be saved or before the model be deleted\n.\n\n\nfrom ray.hooks import Hook\n\nclass AgeValidationHook(Hook):\n    def before_save(self, user):\n        if user.age \n 18:\n            raise Exception('The user must have more than 18 years')\n        return True\n\n@endpoint('/user')\nclass UserModel(AlchemyModel):\n    hooks = [AgeValidationHook]\n    name = StringProperty()\n    age = IntegerProperty()\n\n\n\n\n\n\n\n\n\n\nAvailable Hooks\n\n\n\n\n\n\n\n\n\n\nbefore_delete\n\n\n\n\n\n\nbefore_save\n\n\n\n\n\n\nafter_save\n\n\n\n\n\n\n\n\nThen, if you call the .put() method of UserModel and the user doesn't has age bigger than 18, an Exception will be raised.\n\n\nActions\n\n\nActions provide a simple way to you create behavior in your models through your api. After writing the code bellow, you can use the url \n/api/user/user_id/activate\n to invoke the activate_user method.\n\n\nfrom ray.actions import ActionAPI, action\n\nclass ActionUser(ActionAPI):\n    __model__ = UserModel\n\n    @action(\n/activate\n)\n    def activate_user(self, model_id):\n        user = storage.get(UserModel, model_id)\n        user.activate = True\n        storage.put(user)\n\n\n\n\nAuthentication\n\n\nRay has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method \nauthenticate\n. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.\n\n\nfrom ray.authentication import Authentication\n\n\nclass MyAuth(Authentication):\n\n    @classmethod\n    def authenticate(cls, username, password):\n        user = User.query(User.username == username, User.password == password).one()\n        return {'username': 'ray'} if user else None\n\n\n\n\nIf you want protect all the operations in this endpoint, you can just add this:\n\n\n@endpoint('/person', authentication=MyAuth)\nclass PersonModel(ModelInterface):\n    pass\n\n\n\n\nAfter protect your endpoint via an Authentication, you will need to be loged in to don't get a 403 status code. To do this:\n\n\nLogin\n\n\nimport request\nrequest.post('http://localhost:8080/api/_login',\n             data={\nusername\n: \nyourusername\n, \npassword\n: \nyourpassword\n})\n\n\n\n\nLogout\n\n\nimport request\nrequest.get('http://localhost:8080/api/_logout')\n\n\n\n\nShields\n\n\nRay has an option to you protect just some HTTP methods of your endpoint: using Shields. How it works? You inherit from the Shield class and implement just the http method that you \nwant to protect\n.\n\n\nclass PersonShield(Shield):\n    __model__ = PersonModel\n\n    def get(self, info):\n        return info['profile'] == 'admin'\n\n    # def put(self, info): pass\n\n    # def post(self, info): pass\n\n    # def delete(self, info): pass\n\n\n\n\nThis shield protects the GET method of /api/person. The parameter \ninfo\n in the get method on the shield, is the dictionary returned on your Authentication class. So, all Shields's methods receive this parameter. When you overwrite\na method, Ray will assume that method is under that Shield protection.\n\n\nShields with Actions\n\n\nIf you wanna to protect an action you can do this with Shield. To do this, you just need to implement a @classmethod method in your Shield, \nthat doesnt has one of these names: get, delete, post or put\n.\nIf this Action is not used by an authenticated user, the parameter info in your Shiled's method will be None.\n\n\n\nclass UserShield(Shield):\n    __model__ = UserModel\n\n    @classmethod\n    def protect_enable(cls, info):\n        return info['profile'] == 'admin'\n\n\nclass ActionUser(ActionAPI):\n    __model__ = UserModel\n\n    @action('/enable', protection=UserShield.protect_enable)\n    def enable_user(self, model_id):\n        user = session.get_user()\n        user.enabled = True\n        user.save()\n\n\n\n\nRunning server\n\n\nRay has a WSGI server to run your application. To use it, you just need to run the command bellow and start writing your business rules. The command parameter \n--wsgifile\n, must be used to tell to Ray in which file it should find your \napplication\n scope.\n\n\n# app.py file\nfrom ray.wsgi.wsgi import application\n\n\n\n\nray up --wsgifile=app.py", 
+            "title": "Features"
+        }, 
+        {
+            "location": "/documentation/#features", 
+            "text": "", 
+            "title": "Features"
+        }, 
+        {
+            "location": "/documentation/#easy-apis", 
+            "text": "Create a model and then decorated it with the endpoint decorator.  from ray.endpoint import endpoint\nfrom ray_sqlalchemy import AlchemyModel\nfrom sqlalchemy import Column, Integer, String\n\nBase = declarative_base()\n\n@endpoint('/user')\nclass UserModel(AlchemyModel):\n    name = StringProperty()\n    age = IntegerProperty()  Now, you have the http methods to interact with your model using the urls:     HTTP Verb  Path  Description      GET  /api/user  List all users    GET  /api/user/{id}  Get one user    POST  /api/user  Create an user    PUT  /api/user/{id}  Update an user    DELETE  /api/user/{id}  Delete an user", 
+            "title": "Easy APIs"
+        }, 
+        {
+            "location": "/documentation/#hooks", 
+            "text": "Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed  before save the model, after the model be saved or before the model be deleted .  from ray.hooks import Hook\n\nclass AgeValidationHook(Hook):\n    def before_save(self, user):\n        if user.age   18:\n            raise Exception('The user must have more than 18 years')\n        return True\n\n@endpoint('/user')\nclass UserModel(AlchemyModel):\n    hooks = [AgeValidationHook]\n    name = StringProperty()\n    age = IntegerProperty()     Available Hooks      before_delete    before_save    after_save     Then, if you call the .put() method of UserModel and the user doesn't has age bigger than 18, an Exception will be raised.", 
+            "title": "Hooks"
+        }, 
+        {
+            "location": "/documentation/#actions", 
+            "text": "Actions provide a simple way to you create behavior in your models through your api. After writing the code bellow, you can use the url  /api/user/user_id/activate  to invoke the activate_user method.  from ray.actions import ActionAPI, action\n\nclass ActionUser(ActionAPI):\n    __model__ = UserModel\n\n    @action( /activate )\n    def activate_user(self, model_id):\n        user = storage.get(UserModel, model_id)\n        user.activate = True\n        storage.put(user)", 
+            "title": "Actions"
+        }, 
+        {
+            "location": "/documentation/#authentication", 
+            "text": "Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method  authenticate . In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.  from ray.authentication import Authentication\n\n\nclass MyAuth(Authentication):\n\n    @classmethod\n    def authenticate(cls, username, password):\n        user = User.query(User.username == username, User.password == password).one()\n        return {'username': 'ray'} if user else None  If you want protect all the operations in this endpoint, you can just add this:  @endpoint('/person', authentication=MyAuth)\nclass PersonModel(ModelInterface):\n    pass  After protect your endpoint via an Authentication, you will need to be loged in to don't get a 403 status code. To do this:", 
+            "title": "Authentication"
+        }, 
+        {
+            "location": "/documentation/#login", 
+            "text": "import request\nrequest.post('http://localhost:8080/api/_login',\n             data={ username :  yourusername ,  password :  yourpassword })", 
+            "title": "Login"
+        }, 
+        {
+            "location": "/documentation/#logout", 
+            "text": "import request\nrequest.get('http://localhost:8080/api/_logout')", 
+            "title": "Logout"
+        }, 
+        {
+            "location": "/documentation/#shields", 
+            "text": "Ray has an option to you protect just some HTTP methods of your endpoint: using Shields. How it works? You inherit from the Shield class and implement just the http method that you  want to protect .  class PersonShield(Shield):\n    __model__ = PersonModel\n\n    def get(self, info):\n        return info['profile'] == 'admin'\n\n    # def put(self, info): pass\n\n    # def post(self, info): pass\n\n    # def delete(self, info): pass  This shield protects the GET method of /api/person. The parameter  info  in the get method on the shield, is the dictionary returned on your Authentication class. So, all Shields's methods receive this parameter. When you overwrite\na method, Ray will assume that method is under that Shield protection.", 
+            "title": "Shields"
+        }, 
+        {
+            "location": "/documentation/#shields-with-actions", 
+            "text": "If you wanna to protect an action you can do this with Shield. To do this, you just need to implement a @classmethod method in your Shield,  that doesnt has one of these names: get, delete, post or put .\nIf this Action is not used by an authenticated user, the parameter info in your Shiled's method will be None.  \nclass UserShield(Shield):\n    __model__ = UserModel\n\n    @classmethod\n    def protect_enable(cls, info):\n        return info['profile'] == 'admin'\n\n\nclass ActionUser(ActionAPI):\n    __model__ = UserModel\n\n    @action('/enable', protection=UserShield.protect_enable)\n    def enable_user(self, model_id):\n        user = session.get_user()\n        user.enabled = True\n        user.save()", 
+            "title": "Shields with Actions"
+        }, 
+        {
+            "location": "/documentation/#running-server", 
+            "text": "Ray has a WSGI server to run your application. To use it, you just need to run the command bellow and start writing your business rules. The command parameter  --wsgifile , must be used to tell to Ray in which file it should find your  application  scope.  # app.py file\nfrom ray.wsgi.wsgi import application  ray up --wsgifile=app.py", 
+            "title": "Running server"
+        }, 
+        {
+            "location": "/examples/", 
+            "text": "Examples\n\n\nDo you want to see Ray in action? Check the \nexamples\n directory.\n\n\nIf you wanna use Peewee (or SQLAlchemey), check this \nhere\n\n\nIf you wanne use Google App Engine \nhere", 
+            "title": "Examples"
+        }, 
+        {
+            "location": "/examples/#examples", 
+            "text": "Do you want to see Ray in action? Check the  examples  directory.  If you wanna use Peewee (or SQLAlchemey), check this  here  If you wanne use Google App Engine  here", 
+            "title": "Examples"
+        }, 
+        {
+            "location": "/getting_started/", 
+            "text": "Getting Started\n\n\nBuilding our first application with Ray\n\n\nLets see how easy is build a blog (again? really? \u00af\\\n(\u30c4)\n/\u00af) using \nRay\n!\n\n\nTo do this, we will use the Peewee ORM, which Ray is absolutely compatible (as well with SQLAlchemy and Google App Engine).\n\n\nSo, lets install Peewee and Ray and the Ray plugin to integrated with the ORM.\n\n\npip install peewee\npip install ray_framework\npip install ray_peewee\n\n\n\n\nAfter that, create an \napp.py\n file with our Model, Post.\n\n\n# app.py\n\nimport peewee\nfrom ray_peewee.all import PeeweeModel\nfrom ray.wsgi.wsgi import application\nfrom ray.endpoint import endpoint\n\n\ndatabase = peewee.SqliteDatabase(\nexample.db\n)\n\n\nclass DBModel(PeeweeModel):\n    class Meta:\n        database = database\n\n\n@endpoint(\n/user\n)\nclass Post(DBModel):\n    title = peewee.CharField()\n    description = peewee.TextField()\n\n\n\n\n\nNow, lets run our application and check if it's everything alright.\n\n\nray up --wsgifile=app.py\n\n\n\n\nDone! Now, \nwe already can interact with our blog!\n\n\ncurl -X POST https://localhost:8080/api/user {\ntitle\n: \nOur first POST!\n, \ndescription\n: \nYEY!\n}", 
+            "title": "Getting Started"
+        }, 
+        {
+            "location": "/getting_started/#getting-started", 
+            "text": "", 
+            "title": "Getting Started"
+        }, 
+        {
+            "location": "/getting_started/#building-our-first-application-with-ray", 
+            "text": "Lets see how easy is build a blog (again? really? \u00af\\ (\u30c4) /\u00af) using  Ray !  To do this, we will use the Peewee ORM, which Ray is absolutely compatible (as well with SQLAlchemy and Google App Engine).  So, lets install Peewee and Ray and the Ray plugin to integrated with the ORM.  pip install peewee\npip install ray_framework\npip install ray_peewee  After that, create an  app.py  file with our Model, Post.  # app.py\n\nimport peewee\nfrom ray_peewee.all import PeeweeModel\nfrom ray.wsgi.wsgi import application\nfrom ray.endpoint import endpoint\n\n\ndatabase = peewee.SqliteDatabase( example.db )\n\n\nclass DBModel(PeeweeModel):\n    class Meta:\n        database = database\n\n\n@endpoint( /user )\nclass Post(DBModel):\n    title = peewee.CharField()\n    description = peewee.TextField()  Now, lets run our application and check if it's everything alright.  ray up --wsgifile=app.py  Done! Now,  we already can interact with our blog!  curl -X POST https://localhost:8080/api/user { title :  Our first POST! ,  description :  YEY! }", 
+            "title": "Building our first application with Ray"
+        }
+    ]
+}
