@@ -27,7 +27,7 @@ from ray.wsgi.wsgi import application
 from ray.endpoint import endpoint
 
 
-database = peewee.SqliteDatabase('example.db')
+database = peewee.SqliteDatabase("example.db")
 
 
 class DBModel(PeeweeModel):
@@ -35,7 +35,7 @@ class DBModel(PeeweeModel):
         database = database
 
 
-@endpoint('/user')
+@endpoint("/user")
 class Post(DBModel):
     title = peewee.CharField()
     description = peewee.TextField()
@@ -48,7 +48,7 @@ Now, lets run our application and check if it's everything alright.
 ray up --wsgifile=app.py
 ```
 
-If your something like that show up in your console, **we already can interact with our blog!**
+Done! Now, **we already can interact with our blog!**
 
 ```bash
 curl -X POST https://localhost:8080/api/user {"title": "Our first POST!", "description": "YEY!"}

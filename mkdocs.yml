@@ -1,1 +1,8 @@
 site_name: Ray Framework
+pages:
+- Home: index.md
+- Features: documentation.md
+- Examples: examples.md
+- Getting Started: getting_started.md
+# - Deploying: deploying.md
+theme: mkdocs
