@@ -118,7 +118,46 @@
                 <div class="col-md-9" role="main">
 
 <h1 id="getting-started">Getting Started</h1>
-<h2 id="building-our-first-application-with-ray">Building our first application with Ray</h2></div>
+<h2 id="building-our-first-application-with-ray">Building our first application with Ray</h2>
+<p>Lets see how easy is build a blog (again? really? ¯\<em>(ツ)</em>/¯) using <strong>Ray</strong>!</p>
+<p>To do this, we will use the Peewee ORM, which Ray is absolutely compatible (as well with SQLAlchemy and Google App Engine).</p>
+<p>So, lets install Peewee and Ray and the Ray plugin to integrated with the ORM.</p>
+<pre><code class="bash">pip install peewee
+pip install ray_framework
+pip install ray_peewee
+</code></pre>
+
+<p>After that, create an <em>app.py</em> file with our Model, Post.</p>
+<pre><code class="python"># app.py
+
+import peewee
+from ray_peewee.all import PeeweeModel
+from ray.wsgi.wsgi import application
+from ray.endpoint import endpoint
+
+
+database = peewee.SqliteDatabase('example.db')
+
+
+class DBModel(PeeweeModel):
+    class Meta:
+        database = database
+
+
+@endpoint('/user')
+class Post(DBModel):
+    title = peewee.CharField()
+    description = peewee.TextField()
+
+</code></pre>
+
+<p>Now, lets run our application and check if it's everything alright.</p>
+<pre><code class="bash">ray up --wsgifile=app.py
+</code></pre>
+
+<p>If your something like that show up in your console, <strong>we already can interact with our blog!</strong></p>
+<pre><code class="bash">curl -X POST https://localhost:8080/api/user {&quot;title&quot;: &quot;Our first POST!&quot;, &quot;description&quot;: &quot;YEY!&quot;}
+</code></pre></div>
             
         </div>
 
