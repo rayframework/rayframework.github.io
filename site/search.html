@@ -21,17 +21,13 @@
   <link rel="stylesheet" href="./css/highlight.css">
 
   
-  <script>
-    // Current page data
-    var mkdocs_page_name = "None";
-    var mkdocs_page_input_path = "index.md";
-    var mkdocs_page_url = "/";
-  </script>
-  
   <script src="./js/jquery-2.1.1.min.js"></script>
   <script src="./js/modernizr-2.8.3.min.js"></script>
   <script type="text/javascript" src="./js/highlight.pack.js"></script>
-  <script src="./js/theme.js"></script> 
+  <script src="./js/theme.js"></script>
+  <script>var base_url = '.';</script>
+  <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
+
 
   
 </head>
@@ -55,21 +51,8 @@
         <ul class="current">
           
             <li>
-    <li class="toctree-l1 current">
-        <a class="current" href=".">Home</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#ray-framework">Ray Framework</a></li>
-                
-                    <li><a class="toctree-l4" href="#features">Features</a></li>
-                
-                    <li><a class="toctree-l4" href="#install-it">Install it</a></li>
-                
-                    <li><a class="toctree-l4" href="#author">Author</a></li>
-                
-            
-            </ul>
+    <li class="toctree-l1 ">
+        <a class="" href=".">Home</a>
         
     </li>
 <li>
@@ -115,9 +98,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".">Docs</a> &raquo;</li>
     
-      
     
-    <li>Home</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -127,40 +108,22 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="ray-framework">Ray Framework</h1>
-<p>Ray is a framework that helps you to deliver well-designed software without been stuck in your framework. Ray it's a ready to production framework that contains a uWSGI server ready to be used on production environment.</p>
-<p>Are you using Google App Engine? Great! Ray is compatible with it.</p>
-<p><a href="https://travis-ci.org/felipevolpone/ray"><img alt="Build Status" src="https://travis-ci.org/felipevolpone/ray.svg?branch=master" /></a>
-<a href="https://coveralls.io/github/felipevolpone/ray?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/felipevolpone/ray/badge.svg?branch=master&amp;service=github" /></a>
-<a href="https://codeclimate.com/github/felipevolpone/ray"><img alt="Code Climate" src="https://codeclimate.com/github/felipevolpone/ray/badges/gpa.svg" /></a></p>
-<h2 id="features">Features</h2>
-<ul>
-<li>Easy REST APIs</li>
-<li>Database Hooks</li>
-<li>Built-in Authentication</li>
-<li>Shields to protect your API</li>
-<li>uWSGI built-in server</li>
-<li>Integration with SQLAlchemy</li>
-<li>Integration with Peewee</li>
-<li>Integration with Google App Engine</li>
-</ul>
-<h2 id="install-it">Install it</h2>
-<pre><code class="bash">pip install ray_framework
-</code></pre>
 
-<h2 id="author">Author</h2>
-<p><a href="https://twitter.com/felipevolpone">Felipe Volpone</a></p>
-              
+  <h1 id="search">Search Results</h1>
+
+  <form id="content_search" action="search.html">
+    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span>
+    <input name="q" id="mkdocs-search-query" type="text" class="search_input search-query ui-autocomplete-input" placeholder="Search the Docs" autocomplete="off" autofocus>
+  </form>
+
+  <div id="mkdocs-search-results">
+    Sorry, page not found.
+  </div>
+
+
             </div>
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="documentation/" class="btn btn-neutral float-right" title="Documentation">Next <span class="icon icon-circle-arrow-right"></span></a>
-      
-      
-    </div>
   
 
   <hr/>
@@ -185,15 +148,8 @@
       
       
       
-        <span style="margin-left: 15px"><a href="documentation/" style="color: #fcfcfc">Next &raquo;</a></span>
-      
     </span>
 </div>
 
 </body>
 </html>
-
-<!--
-MkDocs version : 0.15.3
-Build Date UTC : 2016-08-10 02:28:04.615988
--->
