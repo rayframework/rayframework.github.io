@@ -5,4 +5,4 @@ pages:
 - Examples: examples.md
 - Getting Started: getting_started.md
 # - Deploying: deploying.md
-theme: mkdocs
+theme: readthedocs
