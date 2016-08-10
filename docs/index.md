@@ -19,6 +19,11 @@ Are you using Google App Engine? Great! Ray is compatible with it.
 * Integration with Peewee
 * Integration with Google App Engine
 
+## Install it
+```bash
+pip install ray_framework
+```
+
 ## Author
 
 [Felipe Volpone](https://twitter.com/felipevolpone)
