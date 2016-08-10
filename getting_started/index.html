@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-	<title>Getting started - Ray Framework</title>
+	<title>Getting Started - Ray Framework</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
@@ -60,7 +60,7 @@
                 
                 
                     <li >
-                        <a href="../documentation/">Documentation</a>
+                        <a href="../documentation/">Features</a>
                     </li>
                 
                 
@@ -72,7 +72,7 @@
                 
                 
                     <li class="active">
-                        <a href="./">Getting started</a>
+                        <a href="./">Getting Started</a>
                     </li>
                 
                 
@@ -136,7 +136,7 @@ from ray.wsgi.wsgi import application
 from ray.endpoint import endpoint
 
 
-database = peewee.SqliteDatabase('example.db')
+database = peewee.SqliteDatabase(&quot;example.db&quot;)
 
 
 class DBModel(PeeweeModel):
@@ -144,7 +144,7 @@ class DBModel(PeeweeModel):
         database = database
 
 
-@endpoint('/user')
+@endpoint(&quot;/user&quot;)
 class Post(DBModel):
     title = peewee.CharField()
     description = peewee.TextField()
@@ -155,7 +155,7 @@ class Post(DBModel):
 <pre><code class="bash">ray up --wsgifile=app.py
 </code></pre>
 
-<p>If your something like that show up in your console, <strong>we already can interact with our blog!</strong></p>
+<p>Done! Now, <strong>we already can interact with our blog!</strong></p>
 <pre><code class="bash">curl -X POST https://localhost:8080/api/user {&quot;title&quot;: &quot;Our first POST!&quot;, &quot;description&quot;: &quot;YEY!&quot;}
 </code></pre></div>
             
