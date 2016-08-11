@@ -1,2 +1,8 @@
 site_name: Ray Framework
+pages:
+- Home: index.md
+- Getting Started: getting_started.md
+- Examples: examples.md
+- Documentation: documentation.md
+- Plugins: plugins.md
 theme: mkdocs

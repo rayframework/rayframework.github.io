@@ -11,7 +11,7 @@
 
     
     <url>
-     <loc>None/documentation/</loc>
+     <loc>None/getting_started/</loc>
      <lastmod>2016-08-10</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -27,7 +27,15 @@
 
     
     <url>
-     <loc>None/getting_started/</loc>
+     <loc>None/documentation/</loc>
+     <lastmod>2016-08-10</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>None/plugins/</loc>
      <lastmod>2016-08-10</lastmod>
      <changefreq>daily</changefreq>
     </url>
