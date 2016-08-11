@@ -113,7 +113,7 @@ class Post(DBModel):
 
 #### Using Actions
 
-Actions provide a simple way to you create behavior in your models through your API. Actions can require that a parameter must be used in the url, like id, or don't require any model at all.
+Actions provide a simple way to you create behavior in your models through your API. Actions can require that a parameter must be used in the url, like id, or don't require any parameter at all.
 
 ```python
 from ray.actions import ActionAPI, action
