@@ -43,11 +43,11 @@ class UserModel(AlchemyModel):
     name = StringProperty()
     age = IntegerProperty()
 ```
-| Available Hooks |
-| --------------- |
-|  before_delete  |
-|  before_save    |
-|  after_save     |
+Available Hooks:
+
+* before_delete
+* before_save
+* after_save
 
 
 Then, if you call the .put() method of UserModel and the user doesn't has age bigger than 18, an Exception will be raised.

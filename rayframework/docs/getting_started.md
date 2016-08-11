@@ -113,3 +113,21 @@ class Post(DBModel):
 
 #### Using Actions
 
+Actions provide a simple way to you create behavior in your models through your API. Actions can require that a parameter must be used in the url, like id, or don't require any model at all.
+
+```python
+from ray.actions import ActionAPI, action
+
+class ActionPost(ActionAPI):
+    __model__ = Post
+
+    @action("/<id>/upper")
+    def upper_case(self, model_id):
+        post = Post.get(id=model_id)
+        post.update({'title': post.title.upper(), 'id': model_id})
+
+    @action("/now")
+    def now_action(self, model_id):
+        return datetime.now().strftime('%d/%m/%y')
+
+```
