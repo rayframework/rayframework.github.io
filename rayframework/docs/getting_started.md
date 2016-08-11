@@ -82,6 +82,11 @@ curl -X DELETE "http://localhost:8080/api/post/1"
 ```
 
 #### Using Hooks
+Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed:
+
+* before save the model
+* after the model be saved
+* before the model be deleted
 
 Now, let's use add a [Hook](http://localhost:8000/documentation/#hooks), to prevent that a post can be created without a title.
 
@@ -105,3 +110,6 @@ class Post(DBModel):
     description = peewee.TextField()
 
 ```
+
+#### Using Actions
+
