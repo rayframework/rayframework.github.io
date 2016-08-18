@@ -43,10 +43,11 @@ class Post(DBModel):
 ```
 
 Now, lets run our application and check if it's everything alright.
-**If don't want to use curl, you can use the Postman app. You just need import [this file](https://github.com/felipevolpone/ray/blob/master/examples/one-file-example/Ray.postman_collection).**
+**If don't want to use curl, you can use the Postman app. [Just click here](https://www.getpostman.com/collections/46d9f79b0bc1a4df3909).**
 
 ```bash
 ray up --wsgifile=app.py
+
 # if you're using virtualenv
 ray up --wsgifile=app.py --env <env_dir>
 ```
@@ -100,7 +101,7 @@ class PostHook(Hook):
         return True
 ```
 
-To connect this hook with the Post endpoint, you updat your Post class
+To connect this hook with the Post endpoint, you just need add one line in your model
 ```python
 @endpoint('/user')
 class Post(DBModel):
@@ -113,7 +114,8 @@ class Post(DBModel):
 
 #### Using Actions
 
-Actions provide a simple way to you create behavior in your models through your API. Actions can require that a parameter must be used in the url, like id, or don't require any parameter at all.
+Now, lets add another endpoint that change the title of a Post to upper case. This is very simple example, but you can use Actions basically to every action (oh no, really?) that your model has. We could write an Action that deactivate a post or set a favorite flag to true.
+
 
 ```python
 from ray.actions import ActionAPI, action
@@ -126,8 +128,52 @@ class ActionPost(ActionAPI):
         post = Post.get(id=model_id)
         post.update({'title': post.title.upper(), 'id': model_id})
 
-    @action("/now")
-    def now_action(self, model_id):
-        return datetime.now().strftime('%d/%m/%y')
-
 ```
+
+
+#### Using Authentication
+
+Ray has a built-in module of Authentication. You [can get more details of it here](https://rayframework.github.io/site/documentation/#authentication). Basically, we just need to override the authenticate method. Since we don't have a User table to check if the data of user are valid, let's have a hard coded login.
+
+```python
+from ray.authentication import Authentication
+
+
+class MyAuth(Authentication):
+
+    @classmethod
+    def authenticate(cls, username, password):
+        return username == 'ray' and password == 'framework'
+```
+
+Now, update your model to make sure that it will be under the authentication protection.
+```python
+@endpoint('/person', authentication=MyAuth)
+class PersonModel(ModelInterface):
+    pass
+```
+
+Now, you need to login in the application to get acess to the Post endpoint.
+```bash
+curl -X PUT -H "Content-Type: application/json" -d '{
+    "username": "ray",
+    "password": "framework"
+}' "http://localhost:8080/api/_login"
+```
+
+#### Using Shields
+
+With Shields, you can protect your endpoints. Let's imagine that we have a lot of users in your application, but just the user with username 'ray' can update a Post. Let's do this:
+
+```python
+class PostShield(Shield):
+    __model__ = Post
+
+    def put(self, info):
+        return info['username'] == 'ray'
+```
+
+
+#### Done!
+
+Now, you already know the main features of Ray, from these features you can develop anything that you want!
