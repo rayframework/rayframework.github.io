@@ -35,7 +35,7 @@ class DBModel(PeeweeModel):
         database = database
 
 
-@endpoint('/user')
+@endpoint('/post')
 class Post(DBModel):
     title = peewee.CharField()
     description = peewee.TextField()
