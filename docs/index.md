@@ -22,7 +22,7 @@ Are you using Google App Engine? Great! Ray is compatible with it.
 
 ## Why use Ray?
 
-The Ray framework it's a kind of mix of Django and Flask. Django it's the kind of framework that you're stuck with it (this is not always a problem), once you start using it, will become hard to get out of it. In the other side, Flask is a micro-framework that you can connect with a lot of plugins from the python community. Ray try to get the best of both sides, having a small, but powerful core, and allowing plugins to connect with it.
+The Ray framework it's a kind of mix of Django and Flask. Django it's the kind of framework that you're stuck with it (this is not always a problem), once you start using it, will become hard to get out of it. In the other side, Flask is a micro-framework that you can connect with a lot of plugins from the python community. Ray tries to get the best of both sides, having a small, but powerful core, and allowing plugins to connect with it.
 
 With Ray you can develop powerful REST APIs in a simple way and have the core of your application not coupled with the framework.
 
