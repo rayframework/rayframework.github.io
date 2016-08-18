@@ -27,3 +27,4 @@ With Ray you can develop powerful REST APIs in a simple way and have the core of
 ## Author
 
 **[Felipe Volpone](https://twitter.com/felipevolpone)**
+**[You!](https://github.com/felipevolpone/ray/pulls)
