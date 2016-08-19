@@ -35,11 +35,13 @@ class DBModel(PeeweeModel):
         database = database
 
 
-@endpoint('/user')
+@endpoint('/post')
 class Post(DBModel):
     title = peewee.CharField()
     description = peewee.TextField()
 
+
+database.create_tables([Post])
 ```
 
 Now, lets run our application and check if it's everything alright.
