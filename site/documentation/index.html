@@ -185,6 +185,11 @@ class UserModel(AlchemyModel):
 </tr>
 </tbody>
 </table>
+<p>Also, Ray provides a simple way to your search for records. Check it how to do it:</p>
+<pre><code class="bash">curl -X GET &quot;http://localhost:8081/api/user?name=john&amp;age=40&quot;
+</code></pre>
+
+<p>By the default, all columns of your Model can be used to filter.</p>
 <h2 id="hooks">Hooks</h2>
 <p>Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed <strong>before save the model, after the model be saved or before the model be deleted</strong>.</p>
 <pre><code class="python">from ray.hooks import Hook

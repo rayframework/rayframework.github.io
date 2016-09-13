@@ -177,6 +177,10 @@ ray up --wsgifile=app.py --env &lt;env_dir&gt;
 <pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post/&quot;
 </code></pre>
 
+<p>Searching for a record</p>
+<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post?name=john&quot;
+</code></pre>
+
 <p>Get one post</p>
 <pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post/1&quot;
 </code></pre>

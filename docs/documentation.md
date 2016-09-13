@@ -25,6 +25,12 @@ Now, you have the http methods to interact with your model using the urls:
 |  PUT     | /api/user/{id} | Update an user |
 |  DELETE  | /api/user/{id} | Delete an user |
 
+Also, Ray provides a simple way to your search for records. Check it how to do it:
+```bash
+curl -X GET "http://localhost:8081/api/user?name=john&age=40"
+```
+
+By the default, all columns of your Model can be used to filter.
 
 ## Hooks
 Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed **before save the model, after the model be saved or before the model be deleted**.

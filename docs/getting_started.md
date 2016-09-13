@@ -67,6 +67,11 @@ Listing all posts
 curl -X GET "http://localhost:8080/api/post/"
 ```
 
+Searching for a record
+```bash
+curl -X GET "http://localhost:8080/api/post?name=john"
+```
+
 Get one post
 ```bash
 curl -X GET "http://localhost:8080/api/post/1"
