@@ -143,9 +143,10 @@ class ActionPost(ActionAPI):
 Ray has a built-in module of Authentication. You [can get more details of it here](https://rayframework.github.io/site/documentation/#authentication). Basically, we just need to override the authenticate method. Since we don't have a User table to check if the data of user are valid, let's have a hard coded login.
 
 ```python
-from ray.authentication import Authentication
+from ray.authentication import Authentication, register
 
 
+@register
 class MyAuth(Authentication):
 
     @classmethod

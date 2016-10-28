@@ -74,12 +74,13 @@ class ActionUser(ActionAPI):
 ```
 
 ## Authentication
-Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.
+Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded. 
+PS: You can create one (and just one) class that inherit from the Authentication class.
 
 ```python
-from ray.authentication import Authentication
+from ray.authentication import Authentication, register
 
-
+@register
 class MyAuth(Authentication):
 
     @classmethod
