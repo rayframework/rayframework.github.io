@@ -38,9 +38,9 @@ By the default, all columns of your Model can be used to filter.
 Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed **before save the model, after the model be saved or before the model be deleted**.
 
 ```python
-from ray.hooks import Hook
+from ray.hooks import DatabaseHook
 
-class AgeValidationHook(Hook):
+class AgeValidationHook(DatabaseHook):
 
     def before_save(self, user):
         if user.age < 18:
@@ -50,6 +50,7 @@ class AgeValidationHook(Hook):
 @endpoint('/user')
 class UserModel(AlchemyModel):
     hooks = [AgeValidationHook]
+
     name = StringProperty()
     age = IntegerProperty()
 ```
@@ -75,9 +76,9 @@ When the url `/api/user/1/activate?name=john` is called with GET. The parameters
 
 
 ```python
-from ray.actions import ActionAPI, action
+from ray.actions import Action, action
 
-class ActionUser(ActionAPI):
+class ActionUser(Action):
     __model__ = UserModel
 
     @action("/activate")
@@ -89,6 +90,18 @@ class ActionUser(ActionAPI):
 
 #### Action with Authentication
 If you wanna that the Actions method can only be called when the user is authenticated, use the `authentication=True` parameters in the `@action` decorator.
+
+Example:
+```python
+from ray.actions import Action, action
+
+class ActionUser(Action):
+    __model__ = UserModel
+
+    @action("/activate", authentication=True)
+    def activate_user(self, model_id, parameters):
+        pass
+```
 
 ## Authentication
 Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.
@@ -166,7 +179,7 @@ class UserShield(Shield):
         return user_data['profile'] == 'admin'
 
 
-class ActionUser(ActionAPI):
+class ActionUser(Action):
     __model__ = UserModel
 
     @action('/enable', protection=UserShield.protect_enable)
