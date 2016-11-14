@@ -2,6 +2,7 @@
 # Features
 
 ## Easy APIs
+
 Create a model and then decorated it with the endpoint decorator.
 ```python
 from ray.endpoint import endpoint
@@ -15,6 +16,7 @@ class UserModel(AlchemyModel):
     name = StringProperty()
     age = IntegerProperty()
 ```
+
 Now, you have the http methods to interact with your model using the urls:
 
 |HTTP Verb | Path | Description          |
@@ -34,10 +36,12 @@ By the default, all columns of your Model can be used to filter.
 
 ## Hooks
 Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed **before save the model, after the model be saved or before the model be deleted**.
+
 ```python
 from ray.hooks import Hook
 
 class AgeValidationHook(Hook):
+
     def before_save(self, user):
         if user.age < 18:
             raise Exception('The user must have more than 18 years')
@@ -51,15 +55,25 @@ class UserModel(AlchemyModel):
 ```
 Available Hooks:
 
-* before_delete
-* before_save
-* after_save
-
+* `before_delete` method
+* `before_save` method
+* `after_save` method
 
 Then, if you call the .put() method of UserModel and the user doesn't has age bigger than 18, an Exception will be raised.
 
 ## Actions
-Actions provide a simple way to you create behavior in your models through your api. After writing the code bellow, you can use the url **/api/user/user_id/activate** to invoke the activate_user method.
+Actions provide a simple way to you create behavior in your models through your api. After writing the code bellow, you can use the url `/api/user/<user_id>/activate` to invoke the activate_user method.
+
+When you create an action method, the parameters are:
+
+ * `model_id`: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None. 
+ * `parameters`: This parameter will be filled with the json posted when this url were called with a POST or a PUT. However, if you use GET or DELETE the query params in the url will fill the parameters.
+
+As an example:
+
+When the url `/api/user/1/activate?name=john` is called with GET. The parameters will be: `model_id = 1` and parameters a dict `{'name': 'john'}`.
+
+
 ```python
 from ray.actions import ActionAPI, action
 
@@ -67,25 +81,35 @@ class ActionUser(ActionAPI):
     __model__ = UserModel
 
     @action("/activate")
-    def activate_user(self, model_id):
+    def activate_user(self, model_id, parameters):
         user = storage.get(UserModel, model_id)
         user.activate = True
         storage.put(user)
 ```
 
+#### Action with Authentication
+If you wanna that the Actions method can only be called when the user is authenticated, use the `authentication=True` parameters in the `@action` decorator.
+
 ## Authentication
-Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded. 
+Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.
 PS: You can create one (and just one) class that inherit from the Authentication class.
+
+###TODO expiration_time
+###TODO salt_key
 
 ```python
 from ray.authentication import Authentication, register
 
 @register
 class MyAuth(Authentication):
+    
+    salt_key = 'salt_key'  # will be used to generate the JWT
+    expiration_time = 5  # in minutes
 
     @classmethod
-    def authenticate(cls, username, password):
-        user = User.query(User.username == username, User.password == password).one()
+    def authenticate(cls, login_data):
+        user = User.query(User.username == login_data['username'], 
+                          User.password == login_data['password']).one()
         return {'username': 'ray'} if user else None
 ```
 
@@ -99,18 +123,14 @@ class PersonModel(ModelInterface):
 After protect your endpoint via an Authentication, you will need to be loged in to don't get a 403 status code. To do this:
 
 #### Login
-```python
-import request
-request.post('http://localhost:8080/api/_login',
-             data={"username": "yourusername", "password": "yourpassword"})
+```bash
+curl -X POST -H "Content-Type: application/json" '{"username": "username", "password": "password"}' "http://localhost:8080/api/_login"
 ```
 
 #### Logout
-```python
-import request
-request.get('http://localhost:8080/api/_logout')
+```bash
+curl -X GET "http://localhost:8080/api/_logout"
 ```
-
 
 ## Shields
 Ray has an option to you protect just some HTTP methods of your endpoint: using Shields. How it works? You inherit from the Shield class and implement just the http method that you *want to protect*.
@@ -119,30 +139,31 @@ Ray has an option to you protect just some HTTP methods of your endpoint: using 
 class PersonShield(Shield):
     __model__ = PersonModel
 
-    def get(self, info):
-        return info['profile'] == 'admin'
+    def get(self, user_data, model_id, parameters):
+        return user_data['profile'] == 'admin'
 
-    # def put(self, info): pass
+    # def put(self, user_data, model_id, parameters): pass
 
-    # def post(self, info): pass
+    # def post(self, user_data, model_id, parameters): pass
 
-    # def delete(self, info): pass
+    # def delete(self, user_data, model_id, parameters): pass
 ```
-This shield protects the GET method of /api/person. The parameter *info* in the get method on the shield, is the dictionary returned on your Authentication class. So, all Shields's methods receive this parameter. When you overwrite
-a method, Ray will assume that method is under that Shield protection.
+
+This shield protects the GET method of /api/person. The parameter *user_data* in the get method on the shield, is the dictionary returned on your Authentication class. So, all Shields's methods receive this parameter. When you overwrite a method, Ray will assume that method is under that Shield protection.
 
 ### Shields with Actions
-If you wanna to protect an action you can do this with Shield. To do this, you just need to implement a @classmethod method in your Shield, *that doesnt has one of these names: get, delete, post or put*.
-If this Action is not used by an authenticated user, the parameter info in your Shiled's method will be None.
+If you wanna to protect an action you can do this with a Shield. To do this, you just need to implement a @staticmethod method in your Shield, *that doesnt has one of these names: get, delete, post or put*.
+If this Action is not used by an authenticated user, the parameter `user_data` in your Shield's method will be None.
+The parameters `user_id` and `model_id` follow the same rule that the Actions.
 
 ```python
 
 class UserShield(Shield):
     __model__ = UserModel
 
-    @classmethod
-    def protect_enable(cls, info):
-        return info['profile'] == 'admin'
+    @staticmethod
+    def protect_enable(user_data, model_id, parameters):
+        return user_data['profile'] == 'admin'
 
 
 class ActionUser(ActionAPI):
@@ -155,14 +176,8 @@ class ActionUser(ActionAPI):
         user.save()
 ```
 
-## Running server
-Ray has a WSGI server to run your application. To use it, you just need to run the command bellow and start writing your business rules. The command parameter *--wsgifile*, must be used to tell to Ray in which file it should find your *application* scope.
-
-```python
-# app.py file
-from ray.wsgi.wsgi import application
-```
-
+## Running the application
+To run a Ray application, you just need to import `from ray.wsgi.wsgi import application` and then, run:
 ```bash
-ray up --wsgifile=app.py
+python app.py # the name of the file which imported the application variable
 ```

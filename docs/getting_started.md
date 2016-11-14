@@ -48,10 +48,7 @@ Now, lets run our application and check if it's everything alright.
 **If don't want to use curl, you can use the Postman app. [Just click here](https://www.getpostman.com/collections/46d9f79b0bc1a4df3909).**
 
 ```bash
-ray up --wsgifile=app.py
-
-# if you're using virtualenv
-ray up --wsgifile=app.py --env <env_dir>
+python app.py
 ```
 
 Now, **we can interact with our blog!**

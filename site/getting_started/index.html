@@ -238,9 +238,10 @@ class ActionPost(ActionAPI):
 
 <h4 id="using-authentication">Using Authentication</h4>
 <p>Ray has a built-in module of Authentication. You <a href="https://rayframework.github.io/site/documentation/#authentication">can get more details of it here</a>. Basically, we just need to override the authenticate method. Since we don't have a User table to check if the data of user are valid, let's have a hard coded login.</p>
-<pre><code class="python">from ray.authentication import Authentication
+<pre><code class="python">from ray.authentication import Authentication, register
 
 
+@register
 class MyAuth(Authentication):
 
     @classmethod
