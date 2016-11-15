@@ -67,7 +67,7 @@ Run the application.
 python app.py
 ```
 
-Now, **we can interact with our app!** You can interact with the application via [Postman as well]()
+Now, **we can interact with our app!**
 
 * Creating a notebook
 ```bash
