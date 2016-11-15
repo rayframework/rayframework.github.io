@@ -104,11 +104,15 @@ class ActionUser(Action):
 ```
 
 ## Authentication
-Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method *authenticate*. In this method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.
-PS: You can create one (and just one) class that inherit from the Authentication class.
 
-###TODO expiration_time
-###TODO salt_key
+Ray has a built-in authentication module. To use it, you just need to inherit the Authentication class and implement the method `authenticate` and the method `salt_key`. In the `authenticate` method, you'll check the data in the database and then return if the user can login or not. Remember that this method must return a dictionary if the authentication succeeded.
+PS: You can create one (and just one) class that inherit from the Authentication class.
+In the `salt_key` method you should return a salt string used to compose the authentication token.
+
+Also, the Authentication expects that you implement:
+
+ * `expiration_time`: Indicate the time (*in minutes*) that token sent to the client will be valid. If the user don't talk to the API for more than the `expiration_time`, the next time he hit the API he will get a forbidden.
+
 
 ```python
 from ray.authentication import Authentication, register
@@ -116,7 +120,6 @@ from ray.authentication import Authentication, register
 @register
 class MyAuth(Authentication):
     
-    salt_key = 'salt_key'  # will be used to generate the JWT
     expiration_time = 5  # in minutes
 
     @classmethod
@@ -124,6 +127,10 @@ class MyAuth(Authentication):
         user = User.query(User.username == login_data['username'], 
                           User.password == login_data['password']).one()
         return {'username': 'ray'} if user else None
+
+    @classmethod
+    def salt_key(cls):
+        return 'salt_key'
 ```
 
 If you want protect all the operations in this endpoint, you can just add this:
@@ -133,7 +140,7 @@ class PersonModel(ModelInterface):
     pass
 ```
 
-After protect your endpoint via an Authentication, you will need to be loged in to don't get a 403 status code. To do this:
+After protect your endpoint via an Authentication, you will need to be logged in to don't get a 403 status code. To do this:
 
 #### Login
 ```bash
