@@ -125,15 +125,17 @@
 
 <h1 id="getting-started">Getting Started</h1>
 <h2 id="building-our-first-application-with-ray">Building our first application with Ray</h2>
-<p>Lets see how easy is build a blog (again? really? ¯\<em>(ツ)</em>/¯) using <strong>Ray</strong>!</p>
+<p>Let's see how easy is build an Evernote-like app using <strong>Ray</strong>!</p>
 <p>To do this, we will use the Peewee ORM, which Ray is absolutely compatible (as well with SQLAlchemy and Google App Engine).</p>
-<p>So, lets install Peewee and Ray and the Ray plugin to integrated with the ORM.</p>
+<p>Install Peewee and Ray and the Ray plugin to integrated with the ORM.</p>
+<p>TL;DR: You can check the <a href="https://github.com/felipevolpone/ray/blob/master/examples/simple_note/app.py">entire code here</a></p>
+<p>PS: This code is just to provide <strong>an example</strong> of how to use Ray.</p>
 <pre><code class="bash">pip install peewee
 pip install ray_framework
 pip install ray_peewee
 </code></pre>
 
-<p>After that, create an <em>app.py</em> file with our first model: Post.</p>
+<p>After that, create an <em>app.py</em> file with our models: Notebook and Note.</p>
 <pre><code class="python"># app.py
 
 import peewee
@@ -150,109 +152,197 @@ class DBModel(PeeweeModel):
         database = database
 
 
-@endpoint('/post')
-class Post(DBModel):
+@endpoint('/notebook')
+class Notebook(DBModel):
     title = peewee.CharField()
-    description = peewee.TextField()
+    update_at = peewee.BigIntegerField()
+    active = peewee.BooleanField(default=True)
 
 
-database.create_tables([Post])
+@endpoint('/note')
+class Note(DBModel):
+    title = peewee.CharField()
+    update_at = peewee.BigIntegerField()
+    content = peewee.TextField()
+    notebook = peewee.ForeignKeyField(Notebook)
+
+
+if __name__ == '__main__':
+    database.connect()
+    database.create_tables([Notebook, Note], safe=True)
+    database.close()
+    application.run(debug=True, reloader=True)
+
 </code></pre>
 
-<p>Now, lets run our application and check if it's everything alright.
-<strong>If don't want to use curl, you can use the Postman app. <a href="https://www.getpostman.com/collections/46d9f79b0bc1a4df3909">Just click here</a>.</strong></p>
-<pre><code class="bash">ray up --wsgifile=app.py
-
-# if you're using virtualenv
-ray up --wsgifile=app.py --env &lt;env_dir&gt;
+<p>Run the application.</p>
+<pre><code class="bash">python app.py
 </code></pre>
 
-<p>Now, <strong>we can interact with our blog!</strong></p>
-<p>Creating a post</p>
-<pre><code class="bash">curl -X POST -H &quot;Content-Type: application/json&quot; -d '{
-    &quot;title&quot;: &quot;New blog!&quot;,
-    &quot;description&quot;: &quot;lets do this&quot;
-}' &quot;http://localhost:8080/api/post&quot;
+<p>Now, <strong>we can interact with our app!</strong> You can interact with the application via <a href="">Postman as well</a></p>
+<ul>
+<li>Creating a notebook</li>
+</ul>
+<pre><code class="bash">curl -X POST -H &quot;Content-Type: application/json&quot; '{&quot;title&quot;: &quot;new ideas&quot;} ' &quot;http://localhost:8080/api/notebook&quot;
 </code></pre>
 
-<p>Listing all posts</p>
-<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post/&quot;
+<ul>
+<li>Creating a note</li>
+</ul>
+<pre><code class="bash">curl -X POST -H &quot;Content-Type: application/json&quot; '{&quot;title&quot;: &quot;new ideas&quot;, &quot;notebook&quot;: &quot;1&quot;} ' &quot;http://localhost:8080/api/note&quot;
 </code></pre>
 
-<p>Searching for a record</p>
-<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post?name=john&quot;
+<ul>
+<li>Listing all notebooks</li>
+</ul>
+<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/notebook/&quot;
 </code></pre>
 
-<p>Get one post</p>
-<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/post/1&quot;
+<ul>
+<li>Searching for a record</li>
+</ul>
+<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/notebook?title=new ideias&quot;
 </code></pre>
 
-<p>Updating a post</p>
-<pre><code class="bash">curl -X PUT -H &quot;Content-Type: application/json&quot; -d '{&quot;title&quot;: &quot;lets change the title.&quot;}' &quot;http://localhost:8080/api/post/1&quot;
+<ul>
+<li>Get one notebook</li>
+</ul>
+<pre><code class="bash">curl -X GET &quot;http://localhost:8080/api/notebook/1&quot;
 </code></pre>
 
-<p>Delete a post</p>
-<pre><code class="bash">curl -X DELETE &quot;http://localhost:8080/api/post/1&quot;
+<ul>
+<li>Updating a notebook</li>
+</ul>
+<pre><code class="bash">curl -X PUT -H &quot;Content-Type: application/json&quot; -d '{&quot;title&quot;: &quot;lets change the title.&quot;}' &quot;http://localhost:8080/api/notebook/1&quot;
+</code></pre>
+
+<ul>
+<li>Delete a notebook</li>
+</ul>
+<pre><code class="bash">curl -X DELETE &quot;http://localhost:8080/api/notebook/1&quot;
 </code></pre>
 
 <h4 id="using-hooks">Using Hooks</h4>
-<p>Hooks are really useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed:</p>
+<p>Hooks are useful to add validations in different moments of your application. Hook is a class that connect with your model and will be executed:</p>
 <ul>
-<li>before save the model</li>
-<li>after the model be saved</li>
-<li>before the model be deleted</li>
+<li>before save the model (the <code>before_save</code> method)</li>
+<li>after the model be saved (the <code>after_save</code> method)</li>
+<li>before the model be deleted (the <code>before_delete</code> method)</li>
 </ul>
-<p>Now, let's use add a <a href="http://localhost:8000/documentation/#hooks">Hook</a>, to prevent that a post can be created without a title.</p>
-<pre><code class="python">class PostHook(Hook):
+<p>Now, let's use add a <a href="http://localhost:8000/documentation/#hooks">Database Hook</a>, to add some validations.</p>
+<pre><code class="python">from ray.hooks import DatabaseHook
 
-    def before_save(self, post):
-        if not post.title:
+class CreatedAtBaseHook(DatabaseHook):
+
+    def before_save(self, model):
+        model.update_at = int(datetime.now().strftime('%s')) * 1000
+        return True
+
+
+class NoteHook(CreatedAtBaseHook):
+
+    def before_save(self, note):
+        super(NoteHook, self).before_save(note)
+
+        if not note.title:
             raise Exception('Title cannot be None')
 
+        if not note.notebook_id:
+            raise Exception('A note only exists inside a notebook')
+
+        return True
+
+
+class NotebookHook(CreatedAtBaseHook):
+
+    def before_save(self, notebook):
+        super(NotebookHook, self).before_save(notebook)
+
+        if not notebook.title:
+            raise Exception('Title cannot be None')
+
+        #notebook.owner = dict_to_model(User, SimpleNoteAuthentication.get_logged_user())
         return True
 </code></pre>
 
-<p>To connect this hook with the Post endpoint, you just need add one line in your model</p>
-<pre><code class="python">@endpoint('/user')
-class Post(DBModel):
-    hooks = [PostHook]  # add this line
+<p>To connect this hook with the Notebook endpoint, you just need add one line in your model</p>
+<pre><code class="python">@endpoint('/notebook')
+class Notebook(DBModel):
+    hooks = [NotebookHook]
 
-    title = peewee.CharField()
-    description = peewee.TextField()
-
-</code></pre>
-
-<h4 id="using-actions">Using Actions</h4>
-<p>Now, lets add another endpoint that change the title of a Post to upper case. This is very simple example, but you can use Actions basically to every action (oh no, really?) that your model has. We could write an Action that deactivate a post or set a favorite flag to true.</p>
-<pre><code class="python">from ray.actions import ActionAPI, action
-
-class ActionPost(ActionAPI):
-    __model__ = Post
-
-    @action(&quot;/&lt;id&gt;/upper&quot;)
-    def upper_case(self, model_id):
-        post = Post.get(id=model_id)
-        post.update({'title': post.title.upper(), 'id': model_id})
-
+@endpoint('/note')
+class Note(DBModel):
+    hooks = [NoteHook]
 </code></pre>
 
 <h4 id="using-authentication">Using Authentication</h4>
-<p>Ray has a built-in module of Authentication. You <a href="https://rayframework.github.io/site/documentation/#authentication">can get more details of it here</a>. Basically, we just need to override the authenticate method. Since we don't have a User table to check if the data of user are valid, let's have a hard coded login.</p>
+<p>Ray has a built-in module of Authentication. You <a href="https://rayframework.github.io/site/documentation/#authentication">can get more details of it here</a>. Basically, we just need to override the authenticate method. </p>
 <pre><code class="python">from ray.authentication import Authentication, register
 
-
 @register
-class MyAuth(Authentication):
+class SimpleNoteAuthentication(Authentication):
+
+    expiration_time = 5  # in minutes
 
     @classmethod
-    def authenticate(cls, username, password):
-        return username == 'ray' and password == 'framework'
+    def authenticate(cls, login_data):
+        users = User.select().where(User.username == login_data['username'],
+                                    User.password == login_data['password'])
+        if not any(users):
+            raise Exception('Wrong username or/and password')
+
+        return users[0].to_json()
+
+    @classmethod
+    def salt_key(cls):
+        return 'anything'
 </code></pre>
 
-<p>Now, update your model to make sure that it will be under the authentication protection.</p>
-<pre><code class="python">@endpoint('/person', authentication=MyAuth)
-class PersonModel(ModelInterface):
-    pass
+<p>Also, let's create a User model and add the owner field in the Notebook model.</p>
+<pre><code class="python">class UserHook(DatabaseHook):
+
+    def before_save(self, user):
+        users_same_username = (User.select()
+                                   .where(User.username == user.username))
+        if any(users_same_username):
+            raise Exception('The username is unique')
+
+        return True
+
+
+class User(DBModel):
+    hooks = [UserHook]
+
+    username = peewee.CharField()
+    password = peewee.CharField()
+    profile = peewee.CharField()
+
+
+class Profile(object):
+    ADMIN = 'admin'
+    DEFAULT = 'default'
+</code></pre>
+
+<p>In the notebook endpoint, we'll use the authentication argument to say that this endpoint it's under the authentication module. This means that you only can call the notebook endpoints when the user is logged in.</p>
+<pre><code class="python">@endpoint('/notebook', authentication=SimpleNoteAuthentication)
+class Notebook(DBModel):
+    hooks = [NotebookHook]
+    owner = peewee.ForeignKeyField(User)
+
+@endpoint('/note', authentication=SimpleNoteAuthentication)
+class Note(DBModel):
+    hooks = [NoteHook]
+</code></pre>
+
+<p>In the end of your app.py file, add these lines, to create some mock users:</p>
+<pre><code class="python">if __name__ == '__main__':
+    database.connect()
+    database.create_tables([User, Notebook, Note], safe=True)
+    User.create(username='admin', password='admin', profile=Profile.ADMIN)
+    User.create(username='john', password='123', profile=Profile.DEFAULT)
+    database.close()
+    application.run(debug=True, reloader=True)
+
 </code></pre>
 
 <p>Now, you need to login in the application to get acess to the Post endpoint.</p>
@@ -262,17 +352,226 @@ class PersonModel(ModelInterface):
 }' &quot;http://localhost:8080/api/_login&quot;
 </code></pre>
 
-<h4 id="using-shields">Using Shields</h4>
-<p>With Shields, you can protect your endpoints. Let's imagine that we have a lot of users in your application, but just the user with username 'ray' can update a Post. Let's do this:</p>
-<pre><code class="python">class PostShield(Shield):
-    __model__ = Post
+<h4 id="using-actions">Using Actions</h4>
+<p>Actions help you to extend your endpoints and add more behavior to your application. So, we'll create to actions to invite someone to our notebook and to deactivate a notebook.</p>
+<pre><code class="python">
+class MailHelper(object):
 
-    def put(self, info):
-        return info['username'] == 'ray'
+    @classmethod
+    def send_email(self, to, message):
+        # fake send email
+        print('sending email to: %s with message: %s' % (to, message)) 
+
+
+class NotebookActions(Action):
+    __model__ = Notebook
+
+    @action('/&lt;id&gt;/invite', authentication=True)
+    def invite_to_notebook(self, notebook_id, parameters):
+        to = parameters['user_to_invite']
+        title = Notebook.select().where(Notebook.id == notebook_id)[0].title
+        message = 'Help me build new stuff in this notebook: %s' % (title)
+        MailHelper.send_email(to, message)
+
+    @action('/&lt;id&gt;/deactivate', protection=NotebookShield.only_owner_can_deactivate, authentication=True)
+    def deactivate(self, notebook_id, parameters):
+        notebook = Notebook.select().where(Notebook.id == int(notebook_id))[0]
+        notebook.active = False
+        notebook.update()
+</code></pre>
+
+<p>Check that the <code>deactivate</code> method has the protection parameter pointing to a Shield. This is helpful when you wanna protect an Action. So, lets add the <code>only_owner_can_deactivate</code> method in our shield.</p>
+<pre><code class="python">class NotebookShield(Shield):
+    __model__ = Notebook
+
+    def delete(self, user_data, notebook_id, parameters):
+        return user_data['profile'] == Profile.ADMIN
+
+    @staticmethod
+    def only_owner_can_deactivate(user_data, notebook_id, parameters):
+        notebook = Notebook.select().where(Notebook.id == int(notebook_id))[0]
+        notebook_json = model_to_dict(notebook, recurse=False)
+        return user_data['id'] == notebook_json['owner']
+
+</code></pre>
+
+<h4 id="using-shields">Using Shields</h4>
+<p>With Shields, you can protect your endpoints. Let's imagine that only users with the admin profile can call the HTTP DELETE method of our notebook endpoint. To do that:</p>
+<pre><code class="python">class NotebookShield(Shield):
+    __model__ = Notebook
+
+    def delete(self, user_data, notebook_id, parameters):
+        return user_data['profile'] == Profile.ADMIN
 </code></pre>
 
 <h4 id="done">Done!</h4>
-<p>Now, you already know the main features of Ray, from these features you can develop anything that you want!</p></div>
+<p>Now, you already know the main features of Ray, from these features you can develop anything that you want!</p>
+<h3 id="the-entire-code">The Entire code</h3>
+<pre><code class="python">
+from playhouse.shortcuts import dict_to_model, model_to_dict  # peewee
+import peewee
+
+from datetime import datetime
+
+from ray.authentication import Authentication, register
+from ray.hooks import DatabaseHook
+from ray.wsgi.wsgi import application
+from ray.endpoint import endpoint
+from ray_peewee.all import PeeweeModel
+from ray.actions import Action, action
+from ray.shield import Shield
+
+
+database = peewee.SqliteDatabase('example.db')
+
+
+class DBModel(PeeweeModel):
+    class Meta:
+        database = database
+
+
+class MailHelper(object):
+
+    @classmethod
+    def send_email(self, to, message):
+        # fake send email
+        print('sending email to: %s with message: %s' % (to, message))
+
+
+class UserHook(DatabaseHook):
+
+    def before_save(self, user):
+        users_same_username = (User.select()
+                                   .where(User.username == user.username))
+        if any(users_same_username):
+            raise Exception('The username is unique')
+
+        return True
+
+
+class User(DBModel):
+    hooks = [UserHook]
+
+    username = peewee.CharField()
+    password = peewee.CharField()
+    profile = peewee.CharField()
+
+
+@register
+class SimpleNoteAuthentication(Authentication):
+
+    expiration_time = 5  # in minutes
+
+    @classmethod
+    def authenticate(cls, login_data):
+        users = User.select().where(User.username == login_data['username'],
+                                    User.password == login_data['password'])
+        if not any(users):
+            raise Exception('Wrong username or/and password')
+
+        return users[0].to_json()
+
+    @classmethod
+    def salt_key(cls):
+        return 'anything'  # do it rightly here
+
+
+class CreatedAtBaseHook(DatabaseHook):
+
+    def before_save(self, model):
+        model.update_at = int(datetime.now().strftime('%s')) * 1000
+        return True
+
+
+class NoteHook(CreatedAtBaseHook):
+
+    def before_save(self, note):
+        super(NoteHook, self).before_save(note)
+
+        if not note.title:
+            raise Exception('Title cannot be None')
+
+        if not note.notebook_id:
+            raise Exception('A note only exists inside a notebook')
+
+        return True
+
+
+class NotebookHook(CreatedAtBaseHook):
+
+    def before_save(self, notebook):
+        super(NotebookHook, self).before_save(notebook)
+
+        if not notebook.title:
+            raise Exception('Title cannot be None')
+
+        notebook.owner = dict_to_model(User, SimpleNoteAuthentication.get_logged_user())
+        return True
+
+
+@endpoint('/notebook', authentication=SimpleNoteAuthentication)
+class Notebook(DBModel):
+    hooks = [NotebookHook]
+
+    title = peewee.CharField()
+    update_at = peewee.BigIntegerField()
+    owner = peewee.ForeignKeyField(User)
+    active = peewee.BooleanField(default=True)
+
+
+@endpoint('/note', authentication=SimpleNoteAuthentication)
+class Note(DBModel):
+    hooks = [NoteHook]
+
+    title = peewee.CharField()
+    update_at = peewee.BigIntegerField()
+    content = peewee.TextField()
+    notebook = peewee.ForeignKeyField(Notebook)
+
+
+class NotebookShield(Shield):
+    __model__ = Notebook
+
+    def delete(self, user_data, notebook_id, parameters):
+        return user_data['profile'] == Profile.ADMIN
+
+    @staticmethod
+    def only_owner_can_deactivate(user_data, notebook_id, parameters):
+        notebook = Notebook.select().where(Notebook.id == int(notebook_id))[0]
+        notebook_json = model_to_dict(notebook, recurse=False)
+        return user_data['id'] == notebook_json['owner']
+
+
+class NotebookActions(Action):
+    __model__ = Notebook
+
+    @action('/&lt;id&gt;/invite', authentication=True)
+    def invite_to_notebook(self, notebook_id, parameters):
+        to = parameters['user_to_invite']
+        title = Notebook.select().where(Notebook.id == notebook_id)[0].title
+        message = 'Help me build new stuff in this notebook: %s' % (title)
+        MailHelper.send_email(to, message)
+
+    @action('/&lt;id&gt;/deactivate', protection=NotebookShield.only_owner_can_deactivate, authentication=True)
+    def deactivate(self, notebook_id, parameters):
+        notebook = Notebook.select().where(Notebook.id == int(notebook_id))[0]
+        notebook.active = False
+        notebook.update()
+
+
+class Profile(object):
+    ADMIN = 'admin'
+    DEFAULT = 'default'
+
+
+if __name__ == '__main__':
+    database.connect()
+    database.create_tables([User, Notebook, Note], safe=True)
+    User.create(username='admin', password='admin', profile=Profile.ADMIN)
+    User.create(username='john', password='123', profile=Profile.DEFAULT)
+    database.close()
+    application.run(debug=True, reloader=True)
+</code></pre></div>
             
         </div>
 
