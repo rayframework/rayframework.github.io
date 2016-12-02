@@ -67,7 +67,7 @@ Actions provide a simple way to you create behavior in your models through your 
 
 When you create an action method, the parameters are:
 
- * `model_id`: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None. 
+ * `model_id`: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None.
  * `parameters`: This parameter will be filled with the json posted when this url were called with a POST or a PUT. However, if you use GET or DELETE the query params in the url will fill the parameters.
 
 As an example:
@@ -119,12 +119,12 @@ from ray.authentication import Authentication, register
 
 @register
 class MyAuth(Authentication):
-    
+
     expiration_time = 5  # in minutes
 
     @classmethod
     def authenticate(cls, login_data):
-        user = User.query(User.username == login_data['username'], 
+        user = User.query(User.username == login_data['username'],
                           User.password == login_data['password']).one()
         return {'username': 'ray'} if user else None
 
@@ -190,7 +190,7 @@ class ActionUser(Action):
     __model__ = UserModel
 
     @action('/enable', protection=UserShield.protect_enable)
-    def enable_user(self, model_id):
+    def enable_user(self, model_id, parameters):
         user = session.get_user()
         user.enabled = True
         user.save()
