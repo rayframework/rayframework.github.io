@@ -190,7 +190,7 @@ class ActionUser(Action):
     __model__ = UserModel
 
     @action('/enable', protection=UserShield.protect_enable)
-    def enable_user(self, model_id):
+    def enable_user(self, model_id, parameters):
         user = session.get_user()
         user.enabled = True
         user.save()
