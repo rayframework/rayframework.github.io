@@ -126,6 +126,8 @@
         
             <li><a href="#shields">Shields</a></li>
         
+            <li><a href="#serving-static-files">Serving static files</a></li>
+        
             <li><a href="#running-the-application">Running the application</a></li>
         
     
@@ -220,7 +222,7 @@ class UserModel(AlchemyModel):
 <p>Actions provide a simple way to you create behavior in your models through your api. After writing the code bellow, you can use the url <code>/api/user/&lt;user_id&gt;/activate</code> to invoke the activate_user method.</p>
 <p>When you create an action method, the parameters are:</p>
 <ul>
-<li><code>model_id</code>: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None. </li>
+<li><code>model_id</code>: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None.</li>
 <li><code>parameters</code>: This parameter will be filled with the json posted when this url were called with a POST or a PUT. However, if you use GET or DELETE the query params in the url will fill the parameters.</li>
 </ul>
 <p>As an example:</p>
@@ -267,7 +269,7 @@ class MyAuth(Authentication):
 
     @classmethod
     def authenticate(cls, login_data):
-        user = User.query(User.username == login_data['username'], 
+        user = User.query(User.username == login_data['username'],
                           User.password == login_data['password']).one()
         return {'username': 'ray'} if user else None
 
@@ -328,6 +330,15 @@ class ActionUser(Action):
         user = session.get_user()
         user.enabled = True
         user.save()
+</code></pre>
+
+<h2 id="serving-static-files">Serving static files</h2>
+<p>Ray uses bottle under the hood, so you can use bottle to serve your static files. However, this is only for <strong>development enviroment</strong>. In production enviroment, you should use nginx, apache or something like that to serve your static files.</p>
+<p>Serve your static files just adding:</p>
+<pre><code class="python">from bottle import static_file
+@application.route('/static/&lt;filepath:path&gt;')
+def server_static(filepath):
+    return static_file(filepath, root='static')
 </code></pre>
 
 <h2 id="running-the-application">Running the application</h2>

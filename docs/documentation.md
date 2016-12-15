@@ -67,7 +67,7 @@ Actions provide a simple way to you create behavior in your models through your 
 
 When you create an action method, the parameters are:
 
- * `model_id`: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None. 
+ * `model_id`: corresponds to the `<user_id> passed in the url. If there isn't an argument sent in the url, the model_id parameter will be None.
  * `parameters`: This parameter will be filled with the json posted when this url were called with a POST or a PUT. However, if you use GET or DELETE the query params in the url will fill the parameters.
 
 As an example:
@@ -119,12 +119,12 @@ from ray.authentication import Authentication, register
 
 @register
 class MyAuth(Authentication):
-    
+
     expiration_time = 5  # in minutes
 
     @classmethod
     def authenticate(cls, login_data):
-        user = User.query(User.username == login_data['username'], 
+        user = User.query(User.username == login_data['username'],
                           User.password == login_data['password']).one()
         return {'username': 'ray'} if user else None
 
@@ -194,6 +194,17 @@ class ActionUser(Action):
         user = session.get_user()
         user.enabled = True
         user.save()
+```
+
+## Serving static files
+Ray uses bottle under the hood, so you can use bottle to serve your static files. However, this is only for **development enviroment**. In production enviroment, you should use nginx, apache or something like that to serve your static files.
+
+Serve your static files just adding:
+```python
+from bottle import static_file
+@application.route('/static/<filepath:path>')
+def server_static(filepath):
+    return static_file(filepath, root='static')
 ```
 
 ## Running the application
