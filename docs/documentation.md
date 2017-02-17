@@ -196,6 +196,30 @@ class ActionUser(Action):
         user.save()
 ```
 
+## Enable cross domain calls
+Ray doesn't has its own way to enable cross-domain, however it's easy to do it by your self. You just need to implement a bottle plugin just like that:
+```python
+from bottle import response, request
+
+class EnableCors(object):
+    def apply(self, function, context):
+        def __enable_cors(*args, **kwargs):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, PUT, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+            return function(*args, **kwargs)
+        return __enable_cors
+```
+
+After that, you just need to use it in your `app`:
+```python
+from ray.wsgi.wsgi import application
+application.install(EnableCors())
+application.run()
+```
+
+And it's done!
+
 ## Serving static files
 Ray uses bottle under the hood, so you can use bottle to serve your static files. However, this is only for **development enviroment**. In production enviroment, you should use nginx, apache or something like that to serve your static files.
 
